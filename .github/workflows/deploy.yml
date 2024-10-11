@@ -15,8 +15,7 @@ jobs:
       AZURE_SSH_KEY_PRIVATE: ${{ secrets.AZURE_SSH_KEY_PRIVATE }}
       AZURE_SSH_KEY_PUBLIC: ${{ secrets.AZURE_SSH_KEY_PUBLIC }}
       AZURE_TF_STATE_BUCKET_NAME: ${{ secrets.AZURE_TF_STATE_BUCKET_NAME }}
-      AZURE_SSH_KEY_PUBLIC: ${{ secrets.AZURE_SSH_KEY_PUBLIC }}
-      AZURE_REGION: 
+      AZURE_REGION: "eastus"
 
 
     steps: 
