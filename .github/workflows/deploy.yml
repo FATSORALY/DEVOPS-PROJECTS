@@ -3,7 +3,7 @@ name: CI/CD with Terraform
 on:
   push:
     branches:
-      - Complete-CI/CD-with-Terraform-AZURE
+      - main
 
 jobs:
   deploy:
