@@ -53,3 +53,23 @@ variable "network_interface_name" {
   type        = string
   default     = "myNIC"
 }
+
+variable "subscription_id" {
+  description = "ID de l'abonnement Azure"
+  type        = string
+}
+
+variable "client_id" {
+  description = "ID du client Azure"
+  type        = string
+}
+
+variable "client_secret" {
+  description = "Secret du client Azure"
+  type        = string
+}
+
+variable "tenant_id" {
+  description = "ID de l'annuaire Azure (tenant)"
+  type        = string
+}
