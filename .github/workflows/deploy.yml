@@ -17,7 +17,6 @@ jobs:
       AZURE_TF_STATE_BUCKET_NAME: ${{ secrets.AZURE_TF_STATE_BUCKET_NAME }}
       AZURE_REGION: "eastus"
 
-
     steps: 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -28,11 +27,16 @@ jobs:
           terraform_version: 1.1.7 # Mettez à jour la version si nécessaire
 
       - name: Terraform Init
-        run: cd terraform && terraform init
+        run: |
+          cd terraform 
+          terraform init
+        continue-on-error: false
 
       - name: List files
         run: cd terraform && ls -la
 
       - name: Terraform Apply
-        run: cd terraform && terraform apply -auto-approve
-
+        run: |
+          cd terraform 
+          terraform apply -auto-approve
+        continue-on-error: false
