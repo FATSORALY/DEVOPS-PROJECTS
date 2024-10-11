@@ -64,10 +64,10 @@ jobs:
       - name: Deploy Docker image to Azure VM
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.AZURE_VM_IP }}
-          username: azureuser
-          key: ${{ secrets.AZURE_SSH_KEY }}
-          port: 22
+          host: ${{ secrets.AZURE_VM_IP }}  # L'adresse IP publique de votre VM Azure
+          username: azureuser  # Le nom d'utilisateur utilisé lors de la création de la VM
+          key: ${{ secrets.AZURE_SSH_KEY }}  # Votre clé privée SSH stockée dans GitHub Secrets
+          port: 22  # Port SSH
           envs: REGISTRY, REPOSITORY, IMAGE_TAG, AZURE_ACCESS_KEY_ID, AZURE_ACCESS_KEY_SECRET
           script: |
             # Vérifiez si Docker est installé et installez-le si ce n'est pas le cas
@@ -85,6 +85,7 @@ jobs:
             docker stop my-app || true
             docker rm my-app || true
             docker run -d --name my-app -p 80:80 $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
 
       - name: Terraform Apply
         run: |
