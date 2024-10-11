@@ -19,7 +19,7 @@ jobs:
       AZURE_TF_STATE_BUCKET_NAME: ${{ secrets.AZURE_TF_STATE_BUCKET_NAME }}
       AZURE_REGION: "eastus"
 
-    steps: 
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -69,9 +69,9 @@ jobs:
           envs: REGISTRY, REPOSITORY, IMAGE_TAG, AZURE_ACCESS_KEY_ID, AZURE_ACCESS_KEY_SECRET
           script: |
             sudo apt update
-            sudo apt install docker.io -y
+            sudo apt install -y docker.io
             sudo systemctl start docker  # Assurez-vous que le service Docker est démarré
-            docker login $REGISTRY -u $AZURE_ACCESS_KEY_ID -p $AZURE_ACCESS_KEY_SECRET
+            echo "$AZURE_ACCESS_KEY_SECRET" | docker login $REGISTRY -u $AZURE_ACCESS_KEY_ID --password-stdin
             docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
             docker stop my-app || true
             docker rm my-app || true
