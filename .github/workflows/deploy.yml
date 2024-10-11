@@ -30,6 +30,9 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: List files
+        run: ls -la
+
       - name: Terraform Apply
         run: terraform apply -auto-approve
 
