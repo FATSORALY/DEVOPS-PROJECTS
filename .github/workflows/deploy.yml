@@ -9,7 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     outputs:
-      SERVER_PUBLIC_IP: ${{ steps.set-ip.outputs.instance_public_ip}}
+      SERVER_PUBLIC_IP: ${{ steps.set-ip.outputs.instance_public_ip }}
 
     env:  # Définir des variables d'environnement globales
       AZURE_ACCESS_KEY_ID: ${{ secrets.AZURE_ACCESS_KEY_ID }}
@@ -39,14 +39,12 @@ jobs:
       - name: Set output
         id: set-ip
         run: |-
-          echo "::set-output name=instance_public_ip::$(terraform output instance_public_ip)"
+          echo "instance_public_ip=$(terraform output -raw instance_public_ip)" >> $GITHUB_ENV
 
-      - name: Set Ip env variable
-        uses: echo SERVER_PUBLIC_IP= ${{ steps.set-ip.outputs.instance_public_ip}}
       - name: Login to Azure
         uses: azure/login@v1
         with:
-         creds: ${{ secrets.AZURE_CREDENTIALS }}  # JSON du principal de service
+          creds: ${{ secrets.AZURE_CREDENTIALS }}  # JSON du principal de service
 
       - name: Azure Container Registry Login
         run: |
@@ -60,6 +58,7 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
       - name: Deploy Docker image to Azure VM
         uses: appleboy/ssh-action@master
         with:
@@ -71,14 +70,12 @@ jobs:
           script: |
             sudo apt update
             sudo apt install docker.io -y
+            sudo systemctl start docker  # Assurez-vous que le service Docker est démarré
             docker login $REGISTRY -u $AZURE_ACCESS_KEY_ID -p $AZURE_ACCESS_KEY_SECRET
             docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
             docker stop my-app || true
             docker rm my-app || true
             docker run -d --name my-app -p 80:80 $REGISTRY/$REPOSITORY:$IMAGE_TAG
-
-
-
 
       - name: Terraform Apply
         run: |
