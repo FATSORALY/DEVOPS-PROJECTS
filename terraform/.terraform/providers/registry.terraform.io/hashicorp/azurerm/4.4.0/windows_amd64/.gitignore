@@ -1,0 +1,5 @@
+# Ignorer les fichiers .exe
+*.exe
+
+# Ignorer les dossiers Terraform
+.terraform/
