@@ -72,7 +72,7 @@ jobs:
           script: |
             sudo apt update
             sudo apt install -y docker.io
-            sudo systemctl start docker
+            sudo systemctl start docker  # Assurez-vous que Docker est en cours d'exécution
             echo "$AZURE_ACCESS_KEY_SECRET" | docker login $REGISTRY -u $AZURE_ACCESS_KEY_ID --password-stdin
             docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
             docker stop my-app || true
