@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2 # Vérifiez si une version plus récente est disponible
+        uses: hashicorp/setup-terraform@v2.0.0  # Vérifiez la version ici
         with:
           terraform_version: 1.1.7 # Mettez à jour la version si nécessaire
 
