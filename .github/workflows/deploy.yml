@@ -70,10 +70,17 @@ jobs:
           port: 22
           envs: REGISTRY, REPOSITORY, IMAGE_TAG, AZURE_ACCESS_KEY_ID, AZURE_ACCESS_KEY_SECRET
           script: |
-            sudo apt update
-            sudo apt install -y docker.io
-            sudo systemctl start docker  # Assurez-vous que Docker est en cours d'exécution
+            # Vérifiez si Docker est installé et installez-le si ce n'est pas le cas
+            if ! command -v docker &> /dev/null; then
+              sudo apt update
+              sudo apt install -y docker.io
+            fi
+            sudo systemctl start docker  # Démarrez le service Docker
+
+            # Authentifiez-vous auprès de Docker
             echo "$AZURE_ACCESS_KEY_SECRET" | docker login $REGISTRY -u $AZURE_ACCESS_KEY_ID --password-stdin
+            
+            # Déployez l'image Docker
             docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
             docker stop my-app || true
             docker rm my-app || true
