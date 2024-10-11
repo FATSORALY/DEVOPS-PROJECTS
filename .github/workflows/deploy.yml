@@ -8,6 +8,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    outputs:
+      SERVER_PUBLIC_IP: ${{ steps.set-ip.outputs.instance_public_ip}}
 
     env:  # Définir des variables d'environnement globales
       AZURE_ACCESS_KEY_ID: ${{ secrets.AZURE_ACCESS_KEY_ID }}
@@ -33,6 +35,50 @@ jobs:
 
       - name: List files
         run: cd terraform && ls -la
+
+      - name: Set output
+        id: set-ip
+        run: |-
+          echo "::set-output name=instance_public_ip::$(terraform output instance_public_ip)"
+
+      - name: Set Ip env variable
+        uses: echo SERVER_PUBLIC_IP= ${{ steps.set-ip.outputs.instance_public_ip}}
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+         creds: ${{ secrets.AZURE_CREDENTIALS }}  # JSON du principal de service
+
+      - name: Azure Container Registry Login
+        run: |
+          az acr login --name DevopsRegistre
+
+      - name: Build, tag and push Docker image to ACR
+        env:
+          REGISTRY: DevopsRegistre.azurecr.io
+          REPOSITORY: example-node-app
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      - name: Deploy Docker image to Azure VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}  # L'adresse IP publique de votre VM Azure
+          username: azureuser  # Le nom d'utilisateur utilisé lors de la création de la VM
+          key: ${{ secrets.AZURE_SSH_KEY }}  # Votre clé privée SSH stockée dans GitHub Secrets
+          port: 22  # Port SSH
+          envs: REGISTRY, REPOSITORY, IMAGE_TAG, AZURE_ACCESS_KEY_ID, AZURE_ACCESS_KEY_SECRET
+          script: |
+            sudo apt update
+            sudo apt install docker.io -y
+            docker login $REGISTRY -u $AZURE_ACCESS_KEY_ID -p $AZURE_ACCESS_KEY_SECRET
+            docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
+            docker stop my-app || true
+            docker rm my-app || true
+            docker run -d --name my-app -p 80:80 $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+
+
 
       - name: Terraform Apply
         run: |
