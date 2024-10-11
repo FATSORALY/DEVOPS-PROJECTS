@@ -11,7 +11,7 @@ jobs:
     outputs:
       SERVER_PUBLIC_IP: ${{ steps.set-ip.outputs.instance_public_ip }}
 
-    env:  # Définir des variables d'environnement globales
+    env:
       AZURE_ACCESS_KEY_ID: ${{ secrets.AZURE_ACCESS_KEY_ID }}
       AZURE_ACCESS_KEY_SECRET: ${{ secrets.AZURE_ACCESS_KEY_SECRET }}
       AZURE_SSH_KEY_PRIVATE: ${{ secrets.AZURE_SSH_KEY_PRIVATE }}
@@ -26,7 +26,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2.0.0
         with:
-          terraform_version: 1.1.7  # Mettez à jour la version si nécessaire
+          terraform_version: 1.1.7
 
       - name: Terraform Init
         run: |
@@ -34,7 +34,9 @@ jobs:
           terraform init
 
       - name: List files
-        run: cd terraform && ls -la
+        run: |
+          cd terraform
+          ls -la
 
       - name: Set output
         id: set-ip
@@ -44,7 +46,7 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}  # JSON du principal de service
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Azure Container Registry Login
         run: |
@@ -62,15 +64,15 @@ jobs:
       - name: Deploy Docker image to Azure VM
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.AZURE_VM_IP }}  # L'adresse IP publique de votre VM Azure
-          username: azureuser  # Le nom d'utilisateur utilisé lors de la création de la VM
-          key: ${{ secrets.AZURE_SSH_KEY }}  # Votre clé privée SSH stockée dans GitHub Secrets
-          port: 22  # Port SSH
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: azureuser
+          key: ${{ secrets.AZURE_SSH_KEY }}
+          port: 22
           envs: REGISTRY, REPOSITORY, IMAGE_TAG, AZURE_ACCESS_KEY_ID, AZURE_ACCESS_KEY_SECRET
           script: |
             sudo apt update
             sudo apt install -y docker.io
-            sudo systemctl start docker  # Assurez-vous que le service Docker est démarré
+            sudo systemctl start docker
             echo "$AZURE_ACCESS_KEY_SECRET" | docker login $REGISTRY -u $AZURE_ACCESS_KEY_ID --password-stdin
             docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
             docker stop my-app || true
@@ -81,4 +83,3 @@ jobs:
         run: |
           cd terraform 
           terraform apply -auto-approve
-
